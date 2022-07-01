@@ -4,7 +4,7 @@ import React ,{useState, useEffect}from 'react'
 import db from './firebaseConfig'
 import './Sidebar.css'
 import SidebarChat from './SidebarChat'
-function Sidebar() {
+function Sidebar(props) {
 
     const [rooms, setRooms] = useState([]);
     // let count = 0;
@@ -56,9 +56,9 @@ function Sidebar() {
         </div>
         
         <div className="sidebar__chats">
-            <SidebarChat addNewChat/>
+            <SidebarChat addNewChat={true} />
             {
-            rooms.map((room) => <SidebarChat key = {room.id} id = {room.id} name = {room.data.name}/>)}
+            rooms.map((room) => <SidebarChat setForceRender={props.setForceRender} forceRender={props.forceRender}key = {room.id} id = {room.id} name = {room.data.name}/>)}
         </div>
 
     </div>
