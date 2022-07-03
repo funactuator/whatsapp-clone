@@ -9,33 +9,37 @@ import {
   useParams,
 } from "react-router-dom";
 import { useEffect, useState } from 'react';
-
+import Login from'./Login'
+import { useStateValue } from './StateProvider';
 function App() {
 
   // const {roomId} = useParams()
   // useEffect(() => {
   //   console.log(roomId)
   // }, [])
-  const [forceRender, setForceRender] = useState(false);
+
+  const [roomId, setRoomId] = useState("17MkgQzdjpAW9QFDpEOd")
+  const [{user}, dispatch] = useStateValue()
+
   return (
     //BEM Naming convention
     <div className="app">
-      <div className="app__body">
-        <Router>
-          <Sidebar setForceRender={setForceRender} forceRender={forceRender}/>
-          <Switch>
-            <Route path = "/rooms/:roomId" render={(props) => (
-                <Chat forceRender = {forceRender} />
-            )}>
-              
-            </Route>
-            <Route exact path = "/">
-              {/* <Sidebar/> */}
-              {/* <Chat/> */}
-            </Route>
-          </Switch>
-        </Router>
-      </div>
+      {user ? 
+        (<div className="app__body">
+          <Router>
+            <Sidebar setRoomId = {setRoomId} />
+            <Switch>
+              <Route path = "/rooms/:roomId" >
+                <Chat id = {roomId} />
+              </Route>
+              <Route path = "/">
+              </Route>
+            </Switch>
+          </Router>
+        </div>):(
+          <Login/>
+        )
+      }
     </div>
   );
 }

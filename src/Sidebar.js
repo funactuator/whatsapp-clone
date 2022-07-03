@@ -4,27 +4,20 @@ import React ,{useState, useEffect}from 'react'
 import db from './firebaseConfig'
 import './Sidebar.css'
 import SidebarChat from './SidebarChat'
+import { useStateValue } from './StateProvider'
+
 function Sidebar(props) {
 
     const [rooms, setRooms] = useState([]);
+    const [{user}, dispatch] = useStateValue()
     // let count = 0;
     useEffect(() =>{
-        // db.collection('rooms').onSnapshot((snapShot) => {
-        //     setRooms(snapShot.docs.map(doc => ({
-        //     id : doc.id,
-        //     data : doc.data(),
-        // })))})}
-        
         db.collection('rooms').onSnapshot(snapshot => {
-            // count += 1
-            // console.log(count)
-            // console.log(snapshot.docs)
             let roomData = []
             roomData = snapshot.docs.map((doc) =>({
                 id: doc.id,
                 data : doc.data()
             }))
-            // console.log(roomData)
             setRooms(
                 oldRooms => [...roomData]
             )
@@ -35,7 +28,7 @@ function Sidebar(props) {
     <div className="sidebar">
         {/* <h1>I am sidebar</h1> */}
         <div className="sidebar__header">
-            <Avatar/>
+            <Avatar src = {user?.photoURL}/>
             <div className="sidebar__headerRight">
                 <IconButton>
                     <DonutLarge/>
@@ -58,7 +51,7 @@ function Sidebar(props) {
         <div className="sidebar__chats">
             <SidebarChat addNewChat={true} />
             {
-            rooms.map((room) => <SidebarChat setForceRender={props.setForceRender} forceRender={props.forceRender}key = {room.id} id = {room.id} name = {room.data.name}/>)}
+            rooms.map((room) => <SidebarChat setRoomId = {props.setRoomId} key = {room.id} id = {room.id} name = {room.data.name}/>)}
         </div>
 
     </div>

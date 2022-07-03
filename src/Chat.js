@@ -1,51 +1,73 @@
 import { AttachFile, SearchOutlined , MoreVert, InsertEmoticon, Mic} from '@mui/icons-material'
 import { Avatar , IconButton,  } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import './Chat.css'
 import db from './firebaseConfig'
-function Chat(props) {
+import { useStateValue } from './StateProvider'
+import firebase from 'firebase/compat/app';
+function Chat({id}) {
 
     const [seed, setSeed] = useState("")
     const [input, setInput] = useState("")
     // const {roomId} = useParams()
-    // const [pathId, setPathId] = useState(props.id)
+    // const [pathId, setPathId] = useState(id)
     // console.log(pathId)
     const [roomName, setRoomName] = useState("")
+    const [messages, setMessages] = useState([])
+    const [{user}, dispatch] = useStateValue()
+
 
     useEffect(() => {
-      console.log({'f':props.forceRender})
-      if(props.forceRender){
-        // setPathId(props.id)
-        // console.log(window.location)
-        db.collection('rooms').doc(props.id).onSnapshot(snapshot => (setRoomName(snapshot.data().name)))
-      }
-      // console.log(props.id)
-    },[props.forceRender])
-    // console.log(roomId)
+      if(id){ 
+        console.log(id)       
+        db.collection('rooms')
+        .doc(id)
+        .onSnapshot(snapshot => (setRoomName(snapshot.data().name)))
+
+
+        db
+        .collection('rooms')
+        .doc(id)
+        .collection("messages")
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(snapshot => setMessages(snapshot.docs.map(doc => doc.data()))) 
+   }
+    },[id])
+
+
     useEffect(() => {
         setSeed(Math.floor(Math.random() * 5000))
         
     }, [])
+
     const handleInputChange = (event) =>{
         console.log(input, "\t\t", event.target.value)
         setInput(event.target.value)
     }
     const sendMessage = (e) =>{
-        //do some stuff
         e.preventDefault()
+        db.collection('rooms').doc(id).collection('messages').add({
+          name : user.displayName,
+          message : input,
+          timestamp : firebase.firestore.FieldValue.serverTimestamp()
+        })
         setInput("")
+    }
+
+    const test = () => {
+      console.log(messages);
     }
   return (
     <div className="chat">
       <div className="chat__header">
-        <Avatar
+        <Avatar onClick = {test}
           src={`https://avatars.dicebear.com/api/pixel-art/${seed}.svg`}
         />
 
         <div className="chat__headerInfo">
           <h3>{roomName}</h3>
-          <p>Last seen at ...</p>
+          <p>{new Date(messages[messages.length-1]?.timestamp?.toDate()).toUTCString()}</p>
         </div>
         <div className="chat__headerRight">
           <IconButton>
@@ -59,13 +81,19 @@ function Chat(props) {
           </IconButton>
         </div>
       </div>
+      
       <div className="chat__body">
-        
-        <p className={`chat__message && ${true &&  'chat__reciever'}`}>
-            <span className='chat__name'>Kuldeep</span>
-            Hey Guys
-            <span className='chat__timestamp'>3:52</span>
+       { messages.map((message) => (
+          <p className={`chat__message && ${message.name == user.displayName &&  'chat__reciever'}`}>
+            <span className='chat__name'>{message.name}</span>
+            {message.message}
+            <span className='chat__timestamp'>{
+              new Date(message.timestamp?.toDate()).toUTCString()
+            }</span>
         </p>
+       ))
+      }
+        
       </div>
       <div className="chat__footer">
         <InsertEmoticon/>
